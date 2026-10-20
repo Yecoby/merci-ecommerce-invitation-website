@@ -48,3 +48,14 @@ To switch the datasource safely without hand-editing:
 - **Redaction of Sensitive Data:** Loggers must never output raw passwords, session cookies, auth tokens, or payment card data.
 - **Generic Error Responses:** In production (`NODE_ENV === "production"`), uncaught exceptions return generic `"Internal server error."` HTTP 500 responses, preventing internal stack traces or database schema layouts from leaking to clients.
 - **Audit Logs:** The database schema includes an `AuditLog` table designed to track critical administrative state transitions (e.g. order status changes, invitation publication) with actor ID and timestamp.
+
+
+## 4. Client Portal & Order Access Code Architecture Upgrade (Added Oct 2026)
+
+### A. Access Code Generation & Storage Security
+- **Access Codes:** High-entropy, 4-character random alphanumeric strings using Crockford-safe base-32 characters (e.g. `MRC-7K9P`).
+- **Non-Enumerable Verification:** Verification requires BOTH the code and the matching customer order email address. Neither can bypass the other.
+- **SHA-256 Storage:** Raw codes are never stored in the database; only deterministic SHA-256 hashes (`accessCodeHash`) are stored alongside a masked support hint (`accessCodeHint` e.g. `MRC-••9P`).
+- **Encrypted Portal Session:** Successful verification issues an HTTP-only AES-256-GCM encrypted session cookie (`merci_portal_session`), ensuring order references and customer emails are never exposed in query parameters.
+- **Tenant Isolation:** Horizontal authorization checks enforce that authenticated Customer A cannot query, edit, or view Customer B's order, briefing, draft, or RSVP records.
+- **Rate Limiting:** In-memory rate limiting blocks brute-force access attempts after 15 failed requests per 15-minute window.

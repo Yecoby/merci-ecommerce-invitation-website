@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/prisma-client"
 }
 
 datasource db {
@@ -359,6 +360,13 @@ model Order {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
+  // Client Portal Access fields
+  accessCodeHash String?      // SHA-256 hash of high-entropy portal code (e.g. MRC-XXXX)
+  accessCodeHint String?      // e.g. "MRC-••98" for friendly display to admin
+  briefingData   String?      // Rich JSON event briefing data autosaved by customer
+  briefingStatus String       @default("NOT_STARTED") // NOT_STARTED, IN_PROGRESS, SUBMITTED
+  packageSlug    String       @default("self-service") // self-service, custom-concierge, bespoke-atelier
+
   customer   User        @relation(fields: [customerId], references: [id], onDelete: Restrict)
   invitation Invitation? @relation(fields: [invitationId], references: [id])
   inquiry    Inquiry?
@@ -366,10 +374,50 @@ model Order {
   payments   PaymentRecord[]
   revisions  RevisionRequest[]
   statusLogs OrderStatusLog[]
+  seatingTables SeatingTable[]
 
   @@index([customerId])
   @@index([status])
   @@index([reference])
+  @@index([accessCodeHash])
+}
+
+// ---------------------------------------------------------------------------
+// SEATING PLANNER (Optional Phase 8 feature)
+// ---------------------------------------------------------------------------
+
+/// Tables created for an order / invitation to seat confirmed guests
+model SeatingTable {
+  id          String   @id @default(cuid())
+  orderId     String
+  name        String   // e.g. "Table 1 - Orchids", "VIP Presidential Table"
+  capacity    Int      @default(8)
+  shape       String   @default("round") // round, rectangular
+  notes       String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  assignments SeatingAssignment[]
+
+  @@index([orderId])
+}
+
+/// Assignment of a guest / RSVP to a table
+model SeatingAssignment {
+  id          String       @id @default(cuid())
+  tableId     String
+  guestName   String
+  rsvpId      String?
+  seatNumber  Int?
+  notes       String?
+  createdAt   DateTime     @default(now())
+
+  table       SeatingTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  @@index([tableId])
+  @@index([rsvpId])
 }
 
 /// A price quotation presented to the customer for approval.

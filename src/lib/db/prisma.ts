@@ -5,7 +5,9 @@
  * unless we use the global pattern below.
  * In production, a single instance is created and reused.
  */
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@/generated/prisma-client";
+
+export * from "@/generated/prisma-client";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;

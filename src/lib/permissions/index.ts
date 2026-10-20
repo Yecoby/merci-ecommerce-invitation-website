@@ -5,7 +5,7 @@
  * Never trust client-supplied roles, ownership IDs, or status values.
  */
 import { auth } from "@/lib/auth/auth";
-import type { UserRole } from "@prisma/client";
+import type { UserRole } from "@/lib/db/prisma";
 
 /**
  * Returns the current session or null if unauthenticated.

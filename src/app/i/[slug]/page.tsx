@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { TEMPLATES } from "@/lib/templates-data";
 import { BotanicalFloralAccent, CelestialConstellationAccent } from "@/components/ui/decorative-artwork";
+import { EventCountdown } from "@/components/invitation/event-countdown";
+import { InteractiveEnvelopeModal } from "@/components/invitation/interactive-envelope";
 import {
   Calendar,
   Clock,
@@ -15,6 +17,7 @@ import {
   CheckCircle2,
   ChevronDown,
   Sparkles,
+  Download,
 } from "lucide-react";
 
 interface Props {
@@ -93,6 +96,7 @@ export default function PublicInvitationPage({ params }: Props) {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [rsvpError, setRsvpError] = useState("");
+  const [showEnvelope, setShowEnvelope] = useState(true);
 
   const handleRsvpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,6 +131,15 @@ export default function PublicInvitationPage({ params }: Props) {
         color: template.palette.text,
       }}
     >
+      {/* Interactive Envelope Arrival Experience */}
+      {showEnvelope && (
+        <InteractiveEnvelopeModal
+          hosts={eventDetails.hosts}
+          occasionLabel={template.occasionLabel}
+          onOpen={() => setShowEnvelope(false)}
+        />
+      )}
+
       {/* Sticky Top Bar for Visitors */}
       <header className="sticky top-0 z-30 px-4 py-3 flex items-center justify-between border-b border-current/10 backdrop-blur-md bg-inherit/90">
         <div className="text-xs tracking-widest uppercase font-serif">
@@ -190,6 +203,25 @@ export default function PublicInvitationPage({ params }: Props) {
           <div className="space-y-2">
             <p className="font-serif italic text-xl sm:text-2xl">{eventDetails.displayDate}</p>
             <p className="text-sm tracking-wide opacity-90">{eventDetails.time}</p>
+          </div>
+
+          {/* Countdown & Calendar Actions */}
+          <div className="pt-2">
+            <EventCountdown
+              targetDate={
+                dbInvitation?.eventData?.eventDate
+                  ? new Date(dbInvitation.eventData.eventDate).toISOString()
+                  : template.sampleEvent.date
+              }
+            />
+            <div className="flex items-center justify-center gap-4 mt-3">
+              <a
+                href={`/api/invitations/${slug}/calendar`}
+                className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wider underline hover:opacity-75 transition-opacity"
+              >
+                <Download className="w-3.5 h-3.5" /> Save to Calendar (.ics)
+              </a>
+            </div>
           </div>
         </section>
 

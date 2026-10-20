@@ -38,6 +38,7 @@ declare module "lucide-react" {
   export const Compass: LucideIcon;
   export const Cookie: LucideIcon;
   export const Copy: LucideIcon;
+  export const Download: LucideIcon;
   export const Edit: LucideIcon;
   export const Edit2: LucideIcon;
   export const Edit3: LucideIcon;
@@ -47,11 +48,14 @@ declare module "lucide-react" {
   export const FileText: LucideIcon;
   export const Filter: LucideIcon;
   export const Globe: LucideIcon;
+  export const Grid: LucideIcon;
   export const Heart: LucideIcon;
   export const HelpCircle: LucideIcon;
   export const Home: LucideIcon;
   export const Image: LucideIcon;
   export const Info: LucideIcon;
+  export const Key: LucideIcon;
+  export const KeyRound: LucideIcon;
   export const Layers: LucideIcon;
   export const Layout: LucideIcon;
   export const LayoutDashboard: LucideIcon;
@@ -65,6 +69,7 @@ declare module "lucide-react" {
   export const MessageCircle: LucideIcon;
   export const MessageSquare: LucideIcon;
   export const Minus: LucideIcon;
+  export const Monitor: LucideIcon;
   export const Moon: LucideIcon;
   export const MoreHorizontal: LucideIcon;
   export const MoreVertical: LucideIcon;
@@ -75,6 +80,7 @@ declare module "lucide-react" {
   export const Play: LucideIcon;
   export const Plus: LucideIcon;
   export const RefreshCw: LucideIcon;
+  export const Save: LucideIcon;
   export const Search: LucideIcon;
   export const Send: LucideIcon;
   export const Settings: LucideIcon;

@@ -31,17 +31,29 @@ export default async function AdminDashboardPage() {
     totalUsers,
     totalInquiries,
     newInquiries,
+    totalOrders,
     totalInvitations,
     publishedInvitations,
     inquiries,
+    orders,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.inquiry.count(),
     prisma.inquiry.count({ where: { status: "NEW" } }),
+    prisma.order.count(),
     prisma.invitation.count(),
     prisma.invitation.count({ where: { status: "PUBLISHED" } }),
     prisma.inquiry.findMany({
       orderBy: { submittedAt: "desc" },
+      take: 10,
+    }),
+    prisma.order.findMany({
+      include: {
+        customer: { select: { email: true, name: true } },
+        invitation: { select: { publicSlug: true, status: true, title: true } },
+        revisions: { orderBy: { createdAt: "desc" } },
+      },
+      orderBy: { createdAt: "desc" },
       take: 10,
     }),
   ]);
@@ -100,11 +112,11 @@ export default async function AdminDashboardPage() {
 
         <div className="bg-white border border-[#8B8278]/25 p-5 shadow-sm">
           <div className="flex items-center justify-between text-[#8B8278] mb-2">
-            <span className="text-xs uppercase tracking-wider">Currency</span>
-            <span className="text-xs font-semibold text-[#292824]">PHP</span>
+            <span className="text-xs uppercase tracking-wider">Active Orders</span>
+            <Users className="w-4 h-4" />
           </div>
-          <div className="text-2xl sm:text-3xl font-serif text-[#292824]">₱ (PHP)</div>
-          <div className="text-[11px] text-[#8B8278] mt-1">Minor units / Centavos model</div>
+          <div className="text-2xl sm:text-3xl font-serif text-[#292824]">{totalOrders}</div>
+          <div className="text-[11px] text-[#8B8278] mt-1">Client portal orders</div>
         </div>
       </div>
 
@@ -161,6 +173,87 @@ export default async function AdminDashboardPage() {
                     </td>
                     <td className="p-3 text-[#8B8278]">
                       {new Date(inq.submittedAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Orders Management Table */}
+      <div className="space-y-4 pt-6 border-t border-[#8B8278]/20">
+        <div>
+          <h2 className="text-lg font-serif text-[#292824]">Client Portal Orders & Access Codes</h2>
+          <p className="text-xs text-[#8B8278]">
+            Manage client access codes, briefing progress, draft approvals, and publication status.
+          </p>
+        </div>
+
+        {orders.length === 0 ? (
+          <div className="bg-white border border-[#8B8278]/20 p-8 text-center text-xs text-[#8B8278]">
+            No client portal orders created yet.
+          </div>
+        ) : (
+          <div className="bg-white border border-[#8B8278]/20 overflow-x-auto shadow-sm">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-[#FAF8F3] border-b border-[#8B8278]/20 uppercase tracking-wider text-[10px] text-[#8B8278]">
+                <tr>
+                  <th className="p-3">Reference</th>
+                  <th className="p-3">Customer</th>
+                  <th className="p-3">Package</th>
+                  <th className="p-3">Access Hint</th>
+                  <th className="p-3">Order Status</th>
+                  <th className="p-3">Briefing</th>
+                  <th className="p-3">Revisions</th>
+                  <th className="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#8B8278]/15">
+                {orders.map((ord) => (
+                  <tr key={ord.id} className="hover:bg-[#FAF8F3]/50 transition-colors">
+                    <td className="p-3 font-mono font-semibold text-[#292824]">
+                      {ord.reference}
+                    </td>
+                    <td className="p-3">
+                      <div className="font-medium text-[#292824]">{ord.customer.name || "Customer"}</div>
+                      <div className="text-[11px] text-[#8B8278]">{ord.customer.email}</div>
+                    </td>
+                    <td className="p-3 uppercase tracking-wider text-[11px] text-[#292824]">
+                      {ord.packageSlug}
+                    </td>
+                    <td className="p-3 font-mono text-xs text-[#8B8278]">
+                      {ord.accessCodeHint || "None"}
+                    </td>
+                    <td className="p-3">
+                      <span className="inline-block px-2 py-0.5 text-[10px] uppercase tracking-wider font-semibold bg-[#AAB5A0]/20 text-[#2C3527]">
+                        {ord.status}
+                      </span>
+                    </td>
+                    <td className="p-3 text-[#8B8278]">
+                      {ord.briefingStatus}
+                    </td>
+                    <td className="p-3 text-[#8B8278]">
+                      {ord.revisionCount} / {ord.revisionLimit}
+                    </td>
+                    <td className="p-3 text-right space-x-2">
+                      <Link
+                        href={`/portal/order/${ord.reference}`}
+                        target="_blank"
+                        className="text-xs underline text-[#292824] hover:text-[#8B8278]"
+                      >
+                        Open Portal
+                      </Link>
+                      {ord.invitation && (
+                        <Link
+                          href={`/i/${ord.invitation.publicSlug}`}
+                          target="_blank"
+                          className="text-xs underline text-[#8B8278] hover:text-[#292824]"
+                        >
+                          View Site
+                        </Link>
+                      )}
                     </td>
                   </tr>
                 ))}

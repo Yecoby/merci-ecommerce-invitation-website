@@ -2,7 +2,7 @@
  * Augments next-auth types to include custom fields (id, role) on the Session user.
  * This makes session.user.id and session.user.role type-safe throughout the app.
  */
-import type { UserRole } from "@prisma/client";
+import type { UserRole } from "@/lib/db/prisma";
 import "next-auth";
 import "next-auth/jwt";
 
